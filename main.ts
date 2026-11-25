@@ -1,19 +1,17 @@
-import { copyFileSync, mkdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+// Writes the one-word entry to the harness output directory.
+import fs from "node:fs";
+import path from "node:path";
 
-const out = process.env.MAKEFUN_OUTPUT_DIR;
-if (!out) {
-  console.error("MAKEFUN_OUTPUT_DIR is not set");
-  process.exit(1);
+const outDir = process.env.MAKEFUN_OUTPUT_DIR;
+if (!outDir) {
+  throw new Error("MAKEFUN_OUTPUT_DIR is not set");
 }
-const here = dirname(fileURLToPath(import.meta.url));
-const src = join(here, "entry.txt");
-const text = readFileSync(src, "utf8");
-if (!text.trim()) {
-  console.error("entry.txt is empty");
-  process.exit(1);
+
+const entryPath = path.join(import.meta.dirname, "entry.txt");
+const word = fs.readFileSync(entryPath, "utf8");
+if (word.trim().length === 0) {
+  throw new Error("entry.txt is empty");
 }
-console.log(`entry: ${[...text].length} characters`);
-mkdirSync(out, { recursive: true });
-copyFileSync(src, join(out, "entry.txt"));
+fs.mkdirSync(outDir, { recursive: true });
+fs.copyFileSync(entryPath, path.join(outDir, "entry.txt"));
+console.log(`wrote a ${word.trim().length}-character word`);
